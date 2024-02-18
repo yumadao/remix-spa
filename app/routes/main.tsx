@@ -1,10 +1,9 @@
 import { Container, Group, Title, Button, Divider } from "@mantine/core";
-import { Form, Outlet, redirect, useFetcher } from "@remix-run/react";
+import { Form, Outlet, redirect } from "@remix-run/react";
 import { IconLogout } from "@tabler/icons-react";
-import { getCsrfToken, logout } from "~/utils/data";
+import { logout } from "~/utils/data";
 
 export default function MainLayout() {
-  const fetcher = useFetcher();
   return (
     <Container size="lg">
       <Group
@@ -15,22 +14,17 @@ export default function MainLayout() {
         <div>
           <Title order={3}>Todo App</Title>
         </div>
-        <fetcher.Form method="post">
+        <Form method="post">
           <Button type="submit">
             <IconLogout />
           </Button>
-        </fetcher.Form>
+        </Form>
       </Group>
       <Divider mb={30} />
       <Outlet />
     </Container>
   );
 }
-
-export const clientLoader = async () => {
-  await getCsrfToken();
-  return null;
-};
 
 export const clientAction = async () => {
   await logout();

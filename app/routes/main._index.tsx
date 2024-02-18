@@ -1,9 +1,18 @@
-import { Button, Flex, Input, List, ThemeIcon, rem, Text } from "@mantine/core";
+import {
+  Button,
+  Flex,
+  Input,
+  List,
+  ThemeIcon,
+  rem,
+  Text,
+  UnstyledButton,
+} from "@mantine/core";
 import { type MetaFunction } from "@remix-run/node";
 import {
-  Form,
   useLoaderData,
   ClientActionFunctionArgs,
+  useFetcher,
 } from "@remix-run/react";
 import {
   IconCircleCheck,
@@ -12,7 +21,6 @@ import {
   IconPencil,
 } from "@tabler/icons-react";
 import { AxiosError } from "axios";
-import { useState } from "react";
 import { createTask, getAllTasks, getCsrfToken } from "~/utils/data";
 
 export const meta: MetaFunction = () => {
@@ -24,15 +32,15 @@ export const meta: MetaFunction = () => {
 
 export default function About() {
   const { tasks } = useLoaderData<typeof clientLoader>();
-  const [isDone, setIsDone] = useState();
+  const fetcher = useFetcher();
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <Form method="post">
+      <fetcher.Form method="post">
         <Flex>
           <Input name="title" placeholder="タスクを入力" />
           <Button type="submit">作成</Button>
         </Flex>
-      </Form>
+      </fetcher.Form>
       <List
         spacing="xs"
         size="sm"
@@ -52,7 +60,11 @@ export default function About() {
                   {task.title}
                 </Text>
                 <IconPencil />
-                <IconBucket />
+                <fetcher.Form method="delete" action="./delete">
+                  <UnstyledButton type="submit" name="id" value={task.id}>
+                    <IconBucket />
+                  </UnstyledButton>
+                </fetcher.Form>
               </Flex>
             </List.Item>
           );
@@ -68,20 +80,17 @@ export const clientLoader = async () => {
     const tasks = await getAllTasks();
     return { tasks };
   } catch (err) {
-    console.log(err as AxiosError);
     throw new Error((err as AxiosError).message);
   }
 };
 
-export const clientAction = async ({
-  request,
-  ...args
-}: ClientActionFunctionArgs) => {
+export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
   const formData = await request.formData();
   const title = formData.get("title") as string;
-  request.headers.forEach((header) => {
-    console.log({ header, ctx: args.context });
-  });
-  console.log({ title });
-  return await createTask(title);
+  try {
+    await createTask(title);
+    return null;
+  } catch (err) {
+    throw new Error((err as AxiosError).message);
+  }
 };
