@@ -1,3 +1,8 @@
+// Import styles of packages that you've installed.
+// All packages except `@mantine/hooks` require styles imports
+import "@mantine/core/styles.css";
+
+import { MantineProvider } from "@mantine/core";
 import {
   Links,
   Meta,
@@ -16,9 +21,11 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
+        <MantineProvider>
+          <Outlet />
+          <ScrollRestoration />
+          <Scripts />
+        </MantineProvider>
       </body>
     </html>
   );

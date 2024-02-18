@@ -1,4 +1,6 @@
+import { AppShell, Loader } from "@mantine/core";
 import type { MetaFunction } from "@remix-run/node";
+import { getCsrfToken } from "~/utils/data";
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,25 +10,26 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  // const { email } = useStore((state) => state);
+  // const navigate = useNavigate();
+
+  // if (email === undefined) {
+  //   navigate("/auth");
+  // } else {
+  //   navigate("/about");
+  // }
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix (SPA Mode)</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/future/spa-mode"
-            rel="noreferrer"
-          >
-            SPA Mode Guide
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
-    </div>
+    <>
+      <AppShell header={{ height: { base: 48, sm: 60, lg: 76 } }}>
+        <AppShell.Header>Header</AppShell.Header>
+      </AppShell>
+      <Loader color="blue" />
+    </>
   );
 }
+
+export const clientLoader = async () => {
+  await getCsrfToken();
+  return null;
+};
