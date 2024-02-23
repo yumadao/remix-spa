@@ -1,8 +1,4 @@
-import {
-  ClientActionFunctionArgs,
-  ShouldRevalidateFunction,
-  redirect,
-} from "@remix-run/react";
+import { ClientActionFunctionArgs, redirect } from "@remix-run/react";
 import { AxiosError } from "axios";
 import AuthForm from "~/components/authForm";
 import { getCsrfToken, login, signup } from "~/utils/data";
@@ -14,10 +10,6 @@ export default function Auth() {
 export const clientLoader = async () => {
   await getCsrfToken();
   return null;
-};
-
-export const shouldRevalidate: ShouldRevalidateFunction = () => {
-  return false;
 };
 
 export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
