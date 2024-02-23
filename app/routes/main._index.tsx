@@ -1,3 +1,4 @@
+import "@mantine/core/styles.css";
 import {
   Button,
   Flex,
@@ -8,12 +9,9 @@ import {
   Text,
   UnstyledButton,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  ClientActionFunctionArgs,
-  useFetcher,
-} from "@remix-run/react";
+import { ClientActionFunctionArgs, useFetcher } from "@remix-run/react";
 import {
   IconCircleCheck,
   IconCircleDashed,
@@ -21,7 +19,17 @@ import {
   IconPencil,
 } from "@tabler/icons-react";
 import { AxiosError } from "axios";
-import { createTask, getAllTasks, getCsrfToken } from "~/utils/data";
+import { useState } from "react";
+import { typedjson, useTypedLoaderData } from "remix-typedjson";
+import EditModal from "~/components/editModal";
+import {
+  createTask,
+  deleteTask,
+  getAllTasks,
+  getCsrfToken,
+  updateTask,
+} from "~/utils/data";
+import { Task } from "~/utils/types";
 
 export const meta: MetaFunction = () => {
   return [
@@ -31,14 +39,27 @@ export const meta: MetaFunction = () => {
 };
 
 export default function About() {
-  const { tasks } = useLoaderData<typeof clientLoader>();
+  const { tasks } = useTypedLoaderData<typeof clientLoader>();
   const fetcher = useFetcher();
+  const [isShowModal, { open, close }] = useDisclosure(false);
+  const [selectedTask, setSelectedTask] = useState<Task>();
+  const handleOpenModal = (task: Task) => {
+    setSelectedTask(task);
+    open();
+  };
+  const handleCloseModal = () => {
+    setSelectedTask(undefined);
+    close();
+  };
+
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <fetcher.Form method="post">
         <Flex>
           <Input name="title" placeholder="タスクを入力" />
-          <Button type="submit">作成</Button>
+          <Button type="submit" name="action" value="create">
+            作成
+          </Button>
         </Flex>
       </fetcher.Form>
       <List
@@ -54,14 +75,21 @@ export default function About() {
       >
         {tasks.map((task) => {
           return (
-            <List.Item>
+            <List.Item key={task.id}>
               <Flex>
                 <Text w={100} mr={15}>
                   {task.title}
                 </Text>
-                <IconPencil />
-                <fetcher.Form method="delete" action="./delete">
-                  <UnstyledButton type="submit" name="id" value={task.id}>
+                <UnstyledButton
+                  onClick={() => {
+                    handleOpenModal(task);
+                  }}
+                >
+                  <IconPencil />
+                </UnstyledButton>
+                <fetcher.Form method="delete">
+                  <Input type="hidden" name="id" value={task.id} />
+                  <UnstyledButton type="submit" name="action" value="delete">
                     <IconBucket />
                   </UnstyledButton>
                 </fetcher.Form>
@@ -70,6 +98,12 @@ export default function About() {
           );
         })}
       </List>
+
+      <EditModal
+        task={selectedTask}
+        isShow={isShowModal}
+        close={handleCloseModal}
+      />
     </div>
   );
 }
@@ -78,7 +112,7 @@ export const clientLoader = async () => {
   try {
     await getCsrfToken();
     const tasks = await getAllTasks();
-    return { tasks };
+    return typedjson({ tasks });
   } catch (err) {
     throw new Error((err as AxiosError).message);
   }
@@ -86,11 +120,31 @@ export const clientLoader = async () => {
 
 export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
   const formData = await request.formData();
-  const title = formData.get("title") as string;
-  try {
-    await createTask(title);
-    return null;
-  } catch (err) {
-    throw new Error((err as AxiosError).message);
+  const title = formData.get("title");
+  const id = formData.get("id");
+  switch (formData.get("action")) {
+    case "create":
+      if (!title) return null;
+      try {
+        await createTask(title.toString());
+        return null;
+      } catch (err) {
+        throw new Error((err as AxiosError).message);
+      }
+    case "update":
+      if (!title) return null;
+      try {
+        await updateTask(Number(id), title.toString());
+        return null;
+      } catch (err) {
+        throw new Error((err as AxiosError).message);
+      }
+    case "delete":
+      try {
+        await deleteTask(Number(id));
+        return null;
+      } catch (err) {
+        throw new Error((err as AxiosError).message);
+      }
   }
 };

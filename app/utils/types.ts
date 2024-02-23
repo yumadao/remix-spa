@@ -11,8 +11,8 @@ export type UserResponse = {
 export type Task = {
   id: number;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Csrf = {
