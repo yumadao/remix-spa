@@ -1,4 +1,3 @@
-import "@mantine/core/styles.css";
 import {
   Button,
   Flex,
@@ -10,8 +9,12 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { type MetaFunction } from "@remix-run/node";
-import { ClientActionFunctionArgs, useFetcher } from "@remix-run/react";
+import { json, type MetaFunction } from "@remix-run/node";
+import {
+  ClientActionFunctionArgs,
+  useActionData,
+  useFetcher,
+} from "@remix-run/react";
 import {
   IconCircleCheck,
   IconCircleDashed,
@@ -30,6 +33,7 @@ import {
   updateTask,
 } from "~/utils/data";
 import { Task } from "~/utils/types";
+import { z } from "zod";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,8 +42,17 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+const Schema = z.object({
+  title: z
+    .string()
+    .min(1, { message: "タイトルを入力してください" })
+    .max(64, { message: "64文字未満にしてください" }),
+});
+
 export default function About() {
   const { tasks } = useTypedLoaderData<typeof clientLoader>();
+  // const actionData = useActionData<typeof clientAction>();
+  // const validationMessages = actionData?.validationMessages;
   const fetcher = useFetcher();
   const [isShowModal, { open, close }] = useDisclosure(false);
   const [selectedTask, setSelectedTask] = useState<Task>();
@@ -61,6 +74,9 @@ export default function About() {
             作成
           </Button>
         </Flex>
+        {/* {validationMessages?.title?.map((msg) => {
+          return <Text>{msg}</Text>;
+        })} */}
       </fetcher.Form>
       <List
         spacing="xs"
@@ -122,6 +138,12 @@ export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
   const formData = await request.formData();
   const title = formData.get("title");
   const id = formData.get("id");
+  // const validation = Schema.safeParse(Object.fromEntries(formData));
+  // if (!validation.success) {
+  //   return json({
+  //     validationMessages: validation.error.flatten().fieldErrors ?? [],
+  //   });
+  // }
   switch (formData.get("action")) {
     case "create":
       if (!title) return null;
