@@ -14,6 +14,7 @@ import {
   ClientActionFunctionArgs,
   useActionData,
   useFetcher,
+  useLoaderData,
 } from "@remix-run/react";
 import {
   IconCircleCheck,
@@ -23,7 +24,6 @@ import {
 } from "@tabler/icons-react";
 import { AxiosError } from "axios";
 import { useState } from "react";
-import { typedjson, useTypedLoaderData } from "remix-typedjson";
 import EditModal from "~/components/editModal";
 import {
   createTask,
@@ -50,7 +50,7 @@ const Schema = z.object({
 });
 
 export default function About() {
-  const { tasks } = useTypedLoaderData<typeof clientLoader>();
+  const { tasks } = useLoaderData<typeof clientLoader>();
   // const actionData = useActionData<typeof clientAction>();
   // const validationMessages = actionData?.validationMessages;
   const fetcher = useFetcher();
@@ -74,9 +74,6 @@ export default function About() {
             作成
           </Button>
         </Flex>
-        {/* {validationMessages?.title?.map((msg) => {
-          return <Text>{msg}</Text>;
-        })} */}
       </fetcher.Form>
       <List
         spacing="xs"
@@ -128,7 +125,7 @@ export const clientLoader = async () => {
   try {
     await getCsrfToken();
     const tasks = await getAllTasks();
-    return typedjson({ tasks });
+    return json({ tasks });
   } catch (err) {
     throw new Error((err as AxiosError).message);
   }
@@ -138,12 +135,6 @@ export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
   const formData = await request.formData();
   const title = formData.get("title");
   const id = formData.get("id");
-  // const validation = Schema.safeParse(Object.fromEntries(formData));
-  // if (!validation.success) {
-  //   return json({
-  //     validationMessages: validation.error.flatten().fieldErrors ?? [],
-  //   });
-  // }
   switch (formData.get("action")) {
     case "create":
       if (!title) return null;
