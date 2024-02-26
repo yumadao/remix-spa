@@ -33,7 +33,6 @@ import {
   updateTask,
 } from "~/utils/data";
 import { Task } from "~/utils/types";
-import { z } from "zod";
 
 export const meta: MetaFunction = () => {
   return [
@@ -42,17 +41,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const Schema = z.object({
-  title: z
-    .string()
-    .min(1, { message: "タイトルを入力してください" })
-    .max(64, { message: "64文字未満にしてください" }),
-});
-
 export default function About() {
   const { tasks } = useLoaderData<typeof clientLoader>();
-  // const actionData = useActionData<typeof clientAction>();
-  // const validationMessages = actionData?.validationMessages;
   const fetcher = useFetcher();
   const [isShowModal, { open, close }] = useDisclosure(false);
   const [selectedTask, setSelectedTask] = useState<Task>();
