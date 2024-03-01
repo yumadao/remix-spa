@@ -26,6 +26,7 @@ import { AxiosError } from "axios";
 import { useState } from "react";
 import EditModal from "~/components/editModal";
 import {
+  axiosInstance,
   createTask,
   deleteTask,
   getAllTasks,
@@ -33,6 +34,7 @@ import {
   updateTask,
 } from "~/utils/data";
 import { Task } from "~/utils/types";
+import useSWRMutation from "swr/mutation";
 
 export const meta: MetaFunction = () => {
   return [
@@ -41,8 +43,23 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+type Req = {
+  title: string;
+};
+
 export default function About() {
-  const { tasks } = useLoaderData<typeof clientLoader>();
+  // const { tasks } = useLoaderData<typeof clientLoader>();
+  const post = async (url: string, { arg }: { arg: Req }) => {
+    try {
+      const { data } = await axiosInstance.post<Task>(url, {
+        title: arg.title,
+      });
+      return data;
+    } catch (err) {
+      throw new Error((err as AxiosError).message);
+    }
+  };
+  const { trigger, data } = useSWRMutation("/tasks", post);
   const fetcher = useFetcher();
   const [isShowModal, { open, close }] = useDisclosure(false);
   const [selectedTask, setSelectedTask] = useState<Task>();
@@ -57,6 +74,13 @@ export default function About() {
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
+      <button
+        onClick={() => {
+          trigger({ title: "swr test" });
+        }}
+      >
+        {data?.title ?? "no data"}
+      </button>
       <fetcher.Form method="post">
         <Flex>
           <Input name="title" placeholder="タスクを入力" />
@@ -76,7 +100,7 @@ export default function About() {
           </ThemeIcon>
         }
       >
-        {tasks.map((task) => {
+        {/* {tasks.map((task) => {
           return (
             <List.Item key={task.id}>
               <Flex>
@@ -99,7 +123,7 @@ export default function About() {
               </Flex>
             </List.Item>
           );
-        })}
+        })} */}
       </List>
 
       <EditModal
@@ -114,9 +138,12 @@ export default function About() {
 export const clientLoader = async () => {
   try {
     await getCsrfToken();
-    const tasks = await getAllTasks();
-    return json({ tasks });
+    return null;
+    // const tasks = await getAllTasks();
+    // return json({ tasks });
   } catch (err) {
+    const e = err as AxiosError;
+    if (e.status === 404) return;
     throw new Error((err as AxiosError).message);
   }
 };
