@@ -11,6 +11,9 @@ type Props = {
 
 export default function EditModal({ task, isShow, close }: Props) {
   const fetcher = useFetcher();
+  const getFormattedDateText = (dateText: string): string => {
+    return format(dateText, "yyyy/MM/dd");
+  };
   if (!task) return <></>;
   return (
     <Modal opened={isShow} onClose={close} withCloseButton={false} centered>
@@ -28,8 +31,8 @@ export default function EditModal({ task, isShow, close }: Props) {
           </Button>
         </Flex>
         <Flex justify="space-around">
-          <Text>作成日: {format(task.created_at, "yyyy/MM/dd")}</Text>
-          <Text>更新日: {format(task.updated_at, "yyyy/MM/dd")}</Text>
+          <Text>作成日: {getFormattedDateText(task.created_at)}</Text>
+          <Text>更新日: {getFormattedDateText(task.updated_at)}</Text>
         </Flex>
       </fetcher.Form>
     </Modal>
