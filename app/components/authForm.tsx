@@ -16,9 +16,9 @@ type AuthType = "login" | "signup";
 
 export default function AuthForm() {
   const [type, setType] = useState<AuthType>("login");
-  const handleChangeType = () => {
+  const handleChangeType = () =>
     setType((type) => (type === "login" ? "signup" : "login"));
-  };
+
   return (
     <div>
       <Container maw={400} h={200} mt={100}>
