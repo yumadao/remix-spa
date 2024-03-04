@@ -23,7 +23,7 @@ export default function AuthForm() {
     <div>
       <Container maw={400} h={200} mt={100}>
         <Form method="post">
-          <Text>email</Text>
+          <Text>メールアドレス</Text>
           <Input placeholder="メールアドレス" mb={20} name="email" />
           <Text>パスワード</Text>
           <PasswordInput placeholder="パスワード" mb={20} name="password" />
