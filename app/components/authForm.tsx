@@ -1,6 +1,5 @@
-import { Form, Link } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import { useState } from "react";
-import styles from "./authForm.module.css";
 import {
   Box,
   Button,
@@ -8,7 +7,6 @@ import {
   Text,
   Input,
   PasswordInput,
-  Center,
   Flex,
 } from "@mantine/core";
 
